@@ -41,8 +41,12 @@ export interface Match {
   match_time: string;
   video_type: string;
   live_url: string;
+  live_url_low: string | null;
+  live_url_high: string | null;
   status: string;
   thumbnail_url: string | null;
+  reminder_sent: boolean;
+  live_notification_sent: boolean;
   is_active: boolean;
   created_at: string;
   updated_at: string;

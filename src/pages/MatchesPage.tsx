@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, X, Upload, Calendar } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { supabase, Match, Category, Channel } from '../lib/supabase';
+import { adminNotificationService } from '../services/notificationService';
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -23,6 +24,8 @@ export default function MatchesPage() {
     match_time: '',
     video_type: 'YouTube',
     live_url: '',
+    live_url_low: '',
+    live_url_high: '',
     status: 'لم تبدأ بعد',
     thumbnail_url: '',
   });
@@ -36,6 +39,9 @@ export default function MatchesPage() {
     loadMatches();
     loadCategories();
     loadChannels();
+    
+    // Start notification scheduler
+    adminNotificationService.startNotificationScheduler();
   }, []);
 
   const loadMatches = async () => {
@@ -70,6 +76,8 @@ export default function MatchesPage() {
         match_time: match.match_time.slice(0, 16),
         video_type: match.video_type,
         live_url: match.live_url,
+        live_url_low: match.live_url_low || '',
+        live_url_high: match.live_url_high || '',
         status: match.status,
         thumbnail_url: match.thumbnail_url || '',
       });
@@ -86,6 +94,8 @@ export default function MatchesPage() {
         match_time: '',
         video_type: 'YouTube',
         live_url: '',
+        live_url_low: '',
+        live_url_high: '',
         status: 'لم تبدأ بعد',
         thumbnail_url: '',
       });
@@ -249,6 +259,14 @@ export default function MatchesPage() {
                     <span className={`status-badge ${getStatusClass(match.status)}`}>
                       {match.status}
                     </span>
+                    <div className="notification-indicators" style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                      {match.reminder_sent && (
+                        <span title="تم إرسال تذكير" style={{ fontSize: '12px' }}>🔔</span>
+                      )}
+                      {match.live_notification_sent && (
+                        <span title="تم إرسال إشعار البث المباشر" style={{ fontSize: '12px' }}>📺</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="match-actions-col">
@@ -418,15 +436,45 @@ export default function MatchesPage() {
               </div>
 
               <div className="form-group">
-                <label>رابط البث المباشر</label>
+                <label>رابط البث المباشر (الأصلي)</label>
                 <input
                   type="url"
                   value={formData.live_url}
                   onChange={(e) => setFormData({ ...formData, live_url: e.target.value })}
                   required
                   className="form-input"
+                  placeholder="الرابط الأصلي للبث المباشر"
                 />
               </div>
+
+              {/* Quality URLs Section */}
+              <div style={{ padding: '15px 0', margin: '10px 0' }}>
+                <h3 className="form-label" style={{ marginBottom: '15px', fontSize: '16px', fontWeight: 'bold' }}>📺 جودة البث</h3>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>رابط SD (جودة منخفضة)</label>
+                  <input
+                    type="url"
+                    value={formData.live_url_low}
+                    onChange={(e) => setFormData({ ...formData, live_url_low: e.target.value })}
+                    className="form-input"
+                    placeholder="رابط البث SD (اختياري)"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>رابط HD (جودة عالية)</label>
+                  <input
+                    type="url"
+                    value={formData.live_url_high}
+                    onChange={(e) => setFormData({ ...formData, live_url_high: e.target.value })}
+                    className="form-input"
+                    placeholder="رابط البث HD (اختياري)"
+                  />
+                </div>
+              </div>
+              </div> {/* End Quality URLs Section */}
 
               <div className="form-group">
                 <label>حالة المباراة</label>

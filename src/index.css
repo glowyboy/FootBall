@@ -3312,3 +3312,39 @@ body {
     font-size: 0.9rem;
   }
 }
+/* OneSignal Info Section */
+.onesignal-info {
+  background: rgba(138, 43, 226, 0.1);
+  border: 1px solid rgba(138, 43, 226, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 10px;
+}
+
+.onesignal-info h4 {
+  color: #8a2be2;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.onesignal-info ol {
+  color: #b0b0b0;
+  padding-right: 20px;
+  line-height: 1.6;
+}
+
+.onesignal-info li {
+  margin-bottom: 8px;
+}
+
+.onesignal-info a {
+  color: #00bfff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.onesignal-info a:hover {
+  color: #8a2be2;
+  text-decoration: underline;
+}

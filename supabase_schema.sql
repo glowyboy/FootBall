@@ -46,7 +46,11 @@ CREATE TABLE IF NOT EXISTS matches (
   match_time TIMESTAMPTZ NOT NULL,
   video_type TEXT DEFAULT 'YouTube',
   live_url TEXT NOT NULL,
+  live_url_low TEXT,
+  live_url_high TEXT,
   status TEXT DEFAULT 'لم تبدأ بعد',
+  reminder_sent BOOLEAN DEFAULT false,
+  live_notification_sent BOOLEAN DEFAULT false,
   thumbnail_url TEXT,
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -79,6 +83,31 @@ CREATE TABLE IF NOT EXISTS app_settings (
 );
 
 -- ============================================
+-- 6. NOTIFICATION SETTINGS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS notification_settings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  fcm_server_key TEXT,
+  fcm_sender_id TEXT,
+  notification_enabled BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
+-- 7. NOTIFICATIONS LOG TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS notifications_log (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  image_url TEXT,
+  sent_at TIMESTAMPTZ DEFAULT NOW(),
+  status TEXT DEFAULT 'sent',
+  recipients_count INTEGER DEFAULT 0
+);
+
+-- ============================================
 -- INDEXES FOR PERFORMANCE
 -- ============================================
 CREATE INDEX IF NOT EXISTS idx_matches_category ON matches(category_id);
@@ -98,6 +127,8 @@ ALTER TABLE channels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE matches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ads_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notification_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications_log ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- CATEGORIES POLICIES
@@ -210,6 +241,39 @@ CREATE POLICY "Allow authenticated update on app_settings"
   USING (true);
 
 -- ============================================
+-- NOTIFICATION SETTINGS POLICIES
+-- ============================================
+
+-- Allow public read access to notification settings
+CREATE POLICY "Allow public read access to notification_settings"
+  ON notification_settings FOR SELECT
+  USING (true);
+
+-- Allow authenticated users to insert notification settings
+CREATE POLICY "Allow authenticated insert on notification_settings"
+  ON notification_settings FOR INSERT
+  WITH CHECK (true);
+
+-- Allow authenticated users to update notification settings
+CREATE POLICY "Allow authenticated update on notification_settings"
+  ON notification_settings FOR UPDATE
+  USING (true);
+
+-- ============================================
+-- NOTIFICATIONS LOG POLICIES
+-- ============================================
+
+-- Allow public read access to notifications log
+CREATE POLICY "Allow public read access to notifications_log"
+  ON notifications_log FOR SELECT
+  USING (true);
+
+-- Allow authenticated users to insert notifications log
+CREATE POLICY "Allow authenticated insert on notifications_log"
+  ON notifications_log FOR INSERT
+  WITH CHECK (true);
+
+-- ============================================
 -- SAMPLE DATA (Optional - for testing)
 -- ============================================
 
@@ -221,5 +285,10 @@ ON CONFLICT DO NOTHING;
 -- Insert default app settings
 INSERT INTO app_settings (app_name, app_version)
 VALUES ('Sports Streaming', '1.0.0')
+ON CONFLICT DO NOTHING;
+
+-- Insert default notification settings
+INSERT INTO notification_settings (notification_enabled)
+VALUES (false)
 ON CONFLICT DO NOTHING;
 
