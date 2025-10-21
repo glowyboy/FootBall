@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, Upload, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Upload, Calendar, RefreshCw } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { supabase, Match, Category, Channel } from '../lib/supabase';
@@ -146,6 +146,12 @@ export default function MatchesPage() {
           .from('matches')
           .update({ ...formData, updated_at: new Date().toISOString() })
           .eq('id', editingMatch.id);
+        
+        // If match was changed to live, trigger immediate notification
+        if (formData.status === 'جارية الآن' && editingMatch.status !== 'جارية الآن') {
+          console.log('Match went live, triggering notification...');
+          await callEdgeFunction();
+        }
       } else {
         await supabase.from('matches').insert([formData]);
       }
@@ -160,6 +166,44 @@ export default function MatchesPage() {
     if (confirm('هل أنت متأكد من حذف هذه المباراة؟')) {
       await supabase.from('matches').delete().eq('id', id);
       await loadMatches();
+    }
+  };
+
+  // Call Edge Function for auto-update + notifications
+  const callEdgeFunction = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/match-automation`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({})
+      });
+      
+      const result = await response.json();
+      console.log('Edge Function Result:', result);
+      return result;
+    } catch (error) {
+      console.error('Edge Function Error:', error);
+      return null;
+    }
+  };
+
+  const updateMatchStatuses = async () => {
+    setLoading(true);
+    try {
+      // Trigger immediate notification via Edge Function
+      await callEdgeFunction();
+      // Reload matches
+      await loadMatches();
+      
+      alert('تم تحديث قائمة المباريات');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('خطأ في تحديث حالات المباريات');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -208,10 +252,20 @@ export default function MatchesPage() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-title">إدارة المباريات</h1>
-        <button onClick={() => openModal()} className="btn-primary">
-          <Plus className="btn-icon" />
-          إضافة مباراة جديدة
-        </button>
+        <div className="flex gap-3">
+          <button 
+            onClick={updateMatchStatuses} 
+            disabled={loading}
+            className="btn-secondary"
+          >
+            <RefreshCw className={`btn-icon ${loading ? 'animate-spin' : ''}`} />
+            تحديث حالات المباريات
+          </button>
+          <button onClick={() => openModal()} className="btn-primary">
+            <Plus className="btn-icon" />
+            إضافة مباراة جديدة
+          </button>
+        </div>
       </div>
 
       <div className="matches-timeline">
@@ -416,7 +470,20 @@ export default function MatchesPage() {
                   <Calendar className="datepicker-icon" size={20} />
                   <DatePicker
                     selected={formData.match_time ? new Date(formData.match_time) : null}
-                    onChange={(date) => setFormData({ ...formData, match_time: date ? date.toISOString() : '' })}
+                    onChange={(date) => {
+                      if (date) {
+                        // Format as local datetime string (YYYY-MM-DD HH:MM:SS)
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        const localDateTime = `${year}-${month}-${day} ${hours}:${minutes}:00`;
+                        setFormData({ ...formData, match_time: localDateTime });
+                      } else {
+                        setFormData({ ...formData, match_time: '' });
+                      }
+                    }}
                     showTimeInput
                     timeInputLabel="الوقت:"
                     dateFormat="dd/MM/yyyy HH:mm"
