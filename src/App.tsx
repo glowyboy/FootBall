@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
@@ -8,10 +8,21 @@ import ChannelsPage from './pages/ChannelsPage';
 import AdsPage from './pages/AdsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SettingsPage from './pages/SettingsPage';
+import { adminNotificationService } from './services/notificationService';
 
 function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Start automatic notification scheduler when app loads
+  useEffect(() => {
+    console.log('🚀 Starting automatic notification scheduler...');
+    adminNotificationService.startNotificationScheduler();
+    
+    return () => {
+      console.log('🛑 Stopping notification scheduler...');
+    };
+  }, []);
 
   const renderPage = () => {
     switch (activeTab) {

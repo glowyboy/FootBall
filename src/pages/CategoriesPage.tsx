@@ -134,27 +134,29 @@ export default function CategoriesPage() {
             <div className="category-content">
               <h3 className="category-name">{category.name}</h3>
 
-              <div className="category-toggle">
-                <label className="toggle-switch">
-                  <input
-                    type="checkbox"
-                    checked={category.is_active}
-                    onChange={() => toggleActive(category)}
-                  />
-                  <span className="toggle-slider"></span>
-                </label>
-                <span className="toggle-label">
-                  {category.is_active ? 'نشط' : 'غير نشط'}
-                </span>
-              </div>
+              <div className="category-controls">
+                <div className="category-toggle">
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={category.is_active}
+                      onChange={() => toggleActive(category)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                  <span className="toggle-label">
+                    {category.is_active ? 'نشط' : 'غير نشط'}
+                  </span>
+                </div>
 
-              <div className="category-actions">
-                <button onClick={() => openModal(category)} className="btn-icon-action">
-                  <Edit size={18} />
-                </button>
-                <button onClick={() => handleDelete(category.id)} className="btn-icon-action danger">
-                  <Trash2 size={18} />
-                </button>
+                <div className="category-actions">
+                  <button onClick={() => openModal(category)} className="btn-icon-action">
+                    <Edit size={18} />
+                  </button>
+                  <button onClick={() => handleDelete(category.id)} className="btn-icon-action danger">
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>

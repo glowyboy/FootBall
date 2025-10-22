@@ -140,27 +140,29 @@ export default function ChannelsPage() {
             <div className="channel-content">
               <h3 className="channel-name">{channel.name}</h3>
 
-              <div className="channel-toggle">
-                <label className="toggle-switch">
-                  <input
-                    type="checkbox"
-                    checked={channel.is_active}
-                    onChange={() => toggleActive(channel)}
-                  />
-                  <span className="toggle-slider"></span>
-                </label>
-                <span className="toggle-label">
-                  {channel.is_active ? 'نشط' : 'غير نشط'}
-                </span>
-              </div>
+              <div className="channel-controls">
+                <div className="channel-toggle">
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={channel.is_active}
+                      onChange={() => toggleActive(channel)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                  <span className="toggle-label">
+                    {channel.is_active ? 'نشط' : 'غير نشط'}
+                  </span>
+                </div>
 
-              <div className="channel-actions">
-                <button onClick={() => openModal(channel)} className="btn-icon-action">
-                  <Edit size={18} />
-                </button>
-                <button onClick={() => handleDelete(channel.id)} className="btn-icon-action danger">
-                  <Trash2 size={18} />
-                </button>
+                <div className="channel-actions">
+                  <button onClick={() => openModal(channel)} className="btn-icon-action">
+                    <Edit size={18} />
+                  </button>
+                  <button onClick={() => handleDelete(channel.id)} className="btn-icon-action danger">
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
