@@ -144,6 +144,11 @@ export default function ChannelsPage() {
 
             <div className="channel-content">
               <h3 className="channel-name">{channel.name}</h3>
+              {channel.stream_url && (
+                <p style={{ fontSize: '12px', color: '#888', marginTop: '4px', wordBreak: 'break-all' }}>
+                  {channel.stream_url}
+                </p>
+              )}
 
               <div className="channel-controls">
                 <div className="channel-toggle">
@@ -194,6 +199,20 @@ export default function ChannelsPage() {
                   required
                   className="form-input"
                 />
+              </div>
+
+              <div className="form-group">
+                <label>رابط البث المباشر (Stream URL)</label>
+                <input
+                  type="url"
+                  value={formData.stream_url}
+                  onChange={(e) => setFormData({ ...formData, stream_url: e.target.value })}
+                  placeholder="https://example.com/stream.m3u8"
+                  className="form-input"
+                />
+                <small style={{ color: '#888', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                  أدخل رابط البث المباشر للقناة (اختياري)
+                </small>
               </div>
 
               <div className="form-group">
